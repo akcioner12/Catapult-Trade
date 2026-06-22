@@ -1012,7 +1012,7 @@
     <a href="https://t.me/catapulttrade_guide_bot?start=connect" target="_blank" class="btn btn-primary">
       ✈️ Подключить через бота
     </a>
-    <button onclick="tryLoadLK()" class="btn btn-outline">🔄 Уже подключил — проверить</button>
+    <button onclick="window.__lkManualTrigger=true; tryLoadLK()" class="btn btn-outline">🔄 Уже подключил — проверить</button>
   </div>
 
   <!-- Connected state -->
@@ -1328,23 +1328,32 @@ async function refreshMarket() {
 }
 
 // ── LK ──
-async function tryLoadLK() {
+async function tryLoadLK(forceTgId) {
+  const idToUse = forceTgId || TG_ID;
   // Пробуем загрузить JWT из бэкенда по Telegram ID
-  if (TG_ID) {
+  if (idToUse) {
     try {
-      const res = await fetch(`${BACKEND}/users/${TG_ID}`);
+      const res = await fetch(`${BACKEND}/users/${idToUse}`);
       if (res.ok) {
         const user = await res.json();
         if (user.catapult_jwt) {
           lkJwt = user.catapult_jwt;
           localStorage.setItem('catapult_jwt', lkJwt);
         }
+      } else {
+        console.warn('LK lookup failed, status:', res.status, 'for id:', idToUse);
       }
-    } catch(e) { /* silent */ }
+    } catch(e) {
+      console.warn('LK lookup error:', e.message);
+    }
+  } else {
+    console.warn('LK: no Telegram ID available at all');
   }
 
   if (!lkJwt) {
-    showToast('❌ Сначала подключи аккаунт через бота');
+    if (window.__lkManualTrigger) {
+      showToast('❌ Сначала подключи аккаунт через бота');
+    }
     return;
   }
   await loadLKData();
@@ -1502,7 +1511,14 @@ const savedJwt = localStorage.getItem('catapult_jwt');
 if (savedJwt) { lkJwt = savedJwt; }
 
 // Если Mini App открыт через Telegram и есть TG_ID — пробуем сразу авторизовать кабинет
-if (TG_ID) { tryLoadLK(); }
+// Небольшая задержка на случай если Telegram WebApp SDK ещё не успел проинициализироваться
+setTimeout(() => {
+  const liveTgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const liveTgId = liveTgUser?.id || TG_ID;
+  if (liveTgId) {
+    tryLoadLK(liveTgId);
+  }
+}, 300);
 </script>
 </body>
 </html>
