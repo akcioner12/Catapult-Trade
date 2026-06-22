@@ -545,6 +545,106 @@
   }
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
+  /* ── LEADERBOARD (tabs + horizontal cards) ── */
+  .lb-wrap { margin-bottom: 16px; }
+  .lb-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-bottom: 12px;
+    padding-bottom: 2px;
+  }
+  .lb-tabs::-webkit-scrollbar { display: none; }
+  .lb-tab {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .lb-tab.active { color: var(--green); border-color: rgba(0,229,160,0.4); background: rgba(0,229,160,0.08); }
+
+  .lb-scroll-wrap { position: relative; }
+  .lb-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .lb-scroll::-webkit-scrollbar { display: none; }
+  .lb-arrow {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(13,13,26,0.9);
+    border: 1px solid var(--border);
+    color: var(--accent3);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lb-arrow-left { left: -4px; }
+  .lb-arrow-right { right: -4px; }
+
+  .lb-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    flex-shrink: 0;
+    width: 210px;
+  }
+  .lb-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .lb-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .lb-avatar-fallback {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .lb-name { font-size: 13px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-speed {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .lb-speed-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .lb-speed.fast { background: rgba(0,229,160,0.12); color: var(--green); }
+  .lb-speed.fast .lb-speed-dot { background: var(--green); }
+  .lb-speed.slow { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .lb-speed.slow .lb-speed-dot { background: var(--gold); }
+
+  .lb-price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .lb-price { font-size: 17px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .lb-chg { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .lb-chg.up { color: var(--green); }
+  .lb-chg.dn { color: var(--red); }
+
+  .lb-stats-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .lb-stats-row b { color: var(--text); font-family: 'JetBrains Mono', monospace; }
+
   /* ── VOL CARD ── */
   .vol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
   .vol-card {
@@ -628,18 +728,22 @@
     </div>
   </div>
 
-  <div class="sec-title">🔥 Топ по росту</div>
-  <div class="card" id="topGainers">
-    <div class="skel" style="height:14px;margin-bottom:10px"></div>
-    <div class="skel" style="height:14px;margin-bottom:10px"></div>
-    <div class="skel" style="height:14px"></div>
-  </div>
-
-  <div class="sec-title">❄️ Топ по падению</div>
-  <div class="card" id="topLosers">
-    <div class="skel" style="height:14px;margin-bottom:10px"></div>
-    <div class="skel" style="height:14px;margin-bottom:10px"></div>
-    <div class="skel" style="height:14px"></div>
+  <div class="lb-wrap">
+    <div class="lb-tabs">
+      <button class="lb-tab active" data-tab="gainers" onclick="switchLeaderTab('gainers',this)">Лидеры роста</button>
+      <button class="lb-tab" data-tab="new" onclick="switchLeaderTab('new',this)">Новое</button>
+      <button class="lb-tab" data-tab="popular" onclick="switchLeaderTab('popular',this)">Популярные</button>
+      <button class="lb-tab" data-tab="losers" onclick="switchLeaderTab('losers',this)">Лидеры падения</button>
+    </div>
+    <div class="lb-scroll-wrap">
+      <button class="lb-arrow lb-arrow-left" onclick="scrollLeaders(-1)">‹</button>
+      <div class="lb-scroll" id="leaderScroll">
+        <div class="skel" style="height:90px;width:220px;flex-shrink:0;border-radius:14px"></div>
+        <div class="skel" style="height:90px;width:220px;flex-shrink:0;border-radius:14px"></div>
+        <div class="skel" style="height:90px;width:220px;flex-shrink:0;border-radius:14px"></div>
+      </div>
+      <button class="lb-arrow lb-arrow-right" onclick="scrollLeaders(1)">›</button>
+    </div>
   </div>
 
   <div class="sec-title">⚡ О платформе</div>
@@ -1028,7 +1132,7 @@ async function loadTicker() {
   try {
     const data = await gqlPublic(`{
       tokens(input: { pagination: { limit: 20 } }) {
-        items { symbol price volumeUsdtDrops }
+        items { symbol price initialPrice volumeUsdtDrops }
       }
     }`);
     const tokens = data?.data?.tokens?.items || [];
@@ -1038,9 +1142,12 @@ async function loadTicker() {
     // дублируем для бесконечной прокрутки
     const items = [...tokens, ...tokens].map(t => {
       const price = parseFloat(t.price || 0);
+      const init = parseFloat(t.initialPrice || 0);
+      const chg = init ? ((price - init) / init) * 100 : 0;
       return `<div class="ticker-item">
         <span class="ticker-sym">${t.symbol}</span>
         <span class="ticker-price">$${price.toFixed(4)}</span>
+        <span class="ticker-chg ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(1)}%</span>
       </div>`;
     }).join('');
     track.innerHTML = items;
@@ -1048,6 +1155,8 @@ async function loadTicker() {
 }
 
 // ── MARKET DATA ──
+let allTokensCache = [];
+
 async function loadMarket() {
   try {
     const data = await gqlPublic(`{
@@ -1056,18 +1165,26 @@ async function loadMarket() {
           symbol
           name
           price
+          initialPrice
+          avatarUrl
+          buysCount
+          sellsCount
+          uniqueTradersCount
+          speedMode
+          endDate
+          startDate
           volumeUsdtDrops
-          createdAt
         }
-        total
       }
     }`);
 
     const tokens = data?.data?.tokens?.items || [];
-    const total  = data?.data?.tokens?.total || tokens.length;
+    allTokensCache = tokens;
+    const total = tokens.length;
 
     // Hero stats
     const totalVol = tokens.reduce((s, t) => s + parseInt(t.volumeUsdtDrops || 0), 0);
+    const totalTrades = tokens.reduce((s, t) => s + (t.buysCount||0) + (t.sellsCount||0), 0);
     const volFmt = totalVol > 1_000_000_000
       ? `$${(totalVol/1_000_000_000).toFixed(1)}B`
       : totalVol > 1_000_000
@@ -1076,31 +1193,101 @@ async function loadMarket() {
 
     setText('heroVol',    volFmt);
     setText('heroTokens', total);
-    setText('heroTrades', '—');
+    setText('heroTrades', totalTrades);
     setText('mktVol24',   volFmt);
     setText('mktActive',  tokens.length);
-    setText('mktTrades',  '—');
-    setText('mktTraders', '—');
+    setText('mktTrades',  totalTrades);
+    setText('mktTraders', new Set(tokens.flatMap(t => [t.uniqueTradersCount])).size ? tokens.reduce((s,t)=>s+(t.uniqueTradersCount||0),0) : '—');
 
-    // Sort by volume for top gainers / losers (use volume as proxy for activity)
-    // We simulate change with a hash of symbol for demo until real change data is available
-    const withChange = tokens.map(t => {
-      const seed = t.symbol.charCodeAt(0) + (t.symbol.charCodeAt(1) || 0);
-      const fakeChg = ((seed % 40) - 20); // -20% to +20%
-      return { ...t, chg: fakeChg };
-    });
-
-    const gainers = [...withChange].sort((a,b) => b.chg - a.chg).slice(0,5);
-    const losers  = [...withChange].sort((a,b) => a.chg - b.chg).slice(0,5);
-
-    renderTokenList('topGainers', gainers);
-    renderTokenList('topLosers',  losers);
-    renderTokenList('allTokens',  tokens.slice(0,20).map(t => ({ ...t, chg: null })));
+    renderTokenList('allTokens', tokens.slice(0,20));
+    renderLeaderboard('gainers');
 
   } catch(e) {
     console.error('Market load error:', e);
     setText('heroVol','—'); setText('heroTokens','—');
   }
+}
+
+function tokenChangePct(t) {
+  const init = parseFloat(t.initialPrice || 0);
+  const price = parseFloat(t.price || 0);
+  if (!init) return 0;
+  return ((price - init) / init) * 100;
+}
+
+function timeLeft(endDate) {
+  if (!endDate) return '';
+  const ms = new Date(endDate).getTime() - Date.now();
+  if (ms <= 0) return 'ended';
+  const min = Math.floor(ms / 60000);
+  if (min < 60) return `${min}m`;
+  return `${Math.floor(min/60)}h ${min%60}m`;
+}
+
+function speedBadge(mode) {
+  const fast = mode === 'CRACK' || mode === 'MAYHEM';
+  const label = mode === 'CRACK' ? 'crack' : mode === 'MAYHEM' ? 'mayhem' : (mode||'').toLowerCase() || 'normal';
+  return `<span class="lb-speed ${fast?'fast':'slow'}"><span class="lb-speed-dot"></span>${label}</span>`;
+}
+
+function renderLeaderboard(tab) {
+  let list = [...allTokensCache];
+
+  if (tab === 'gainers') {
+    list = list.map(t => ({...t, _chg: tokenChangePct(t)})).sort((a,b) => b._chg - a._chg);
+  } else if (tab === 'losers') {
+    list = list.map(t => ({...t, _chg: tokenChangePct(t)})).sort((a,b) => a._chg - b._chg);
+  } else if (tab === 'popular') {
+    list = list.map(t => ({...t, _chg: tokenChangePct(t)})).sort((a,b) => (b.uniqueTradersCount||0) - (a.uniqueTradersCount||0));
+  } else if (tab === 'new') {
+    list = list.map(t => ({...t, _chg: tokenChangePct(t)})).sort((a,b) => new Date(b.startDate||0) - new Date(a.startDate||0));
+  }
+
+  list = list.slice(0, 10);
+
+  const wrap = document.getElementById('leaderScroll');
+  if (!list.length) {
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:10px">Нет данных</p>';
+    return;
+  }
+
+  wrap.innerHTML = list.map(t => {
+    const chg = t._chg ?? tokenChangePct(t);
+    const price = parseFloat(t.price || 0);
+    const vol = parseInt(t.volumeUsdtDrops || 0) / 1_000_000;
+    const avatar = t.avatarUrl
+      ? `<img class="lb-avatar" src="${t.avatarUrl}" onerror="this.outerHTML='<div class=&quot;lb-avatar-fallback&quot;>${(t.symbol||'?').slice(0,2)}</div>'">`
+      : `<div class="lb-avatar-fallback">${(t.symbol||'?').slice(0,2)}</div>`;
+    return `
+    <div class="lb-card">
+      <div class="lb-card-top">
+        ${avatar}
+        <div class="lb-name">${t.symbol || t.name || '?'}</div>
+        ${speedBadge(t.speedMode)}
+      </div>
+      <div class="lb-price-row">
+        <span class="lb-price">$${price < 0.01 ? price.toFixed(6) : price.toFixed(2)}</span>
+        <span class="lb-chg ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(1)}%</span>
+      </div>
+      <div class="lb-stats-row">
+        <span>⏱ <b>${timeLeft(t.endDate)}</b></span>
+        <span>Vol: <b>$${vol.toFixed(1)}K</b></span>
+        <span>👥 <b>${t.uniqueTradersCount||0}</b></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchLeaderTab(tab, btn) {
+  document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('leaderScroll').scrollLeft = 0;
+  renderLeaderboard(tab);
+}
+
+function scrollLeaders(dir) {
+  const el = document.getElementById('leaderScroll');
+  el.scrollBy({ left: dir * 230, behavior: 'smooth' });
 }
 
 function renderTokenList(elId, tokens) {
@@ -1109,22 +1296,19 @@ function renderTokenList(elId, tokens) {
   el.innerHTML = tokens.map(t => {
     const price = parseFloat(t.price || 0);
     const vol   = parseInt(t.volumeUsdtDrops || 0) / 1_000_000;
-    const chg   = t.chg;
-    const chgHtml = chg !== null
-      ? `<div class="token-chg ${chg >= 0 ? 'up' : 'dn'}">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>`
-      : `<div class="token-chg" style="color:var(--muted)">Vol $${vol.toFixed(0)}</div>`;
+    const chg   = tokenChangePct(t);
     return `
     <div class="token-row">
       <div class="token-left">
         <div class="token-icon">${(t.symbol||'?').slice(0,2)}</div>
         <div>
           <div class="token-name">${t.symbol || '?'}</div>
-          <div class="token-vol">Vol $${vol.toFixed(0)}</div>
+          <div class="token-vol">Vol $${vol.toFixed(0)}K</div>
         </div>
       </div>
       <div class="token-right">
         <div class="token-price">$${price < 0.01 ? price.toFixed(6) : price.toFixed(4)}</div>
-        ${chgHtml}
+        <div class="token-chg ${chg >= 0 ? 'up' : 'dn'}">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>
       </div>
     </div>`;
   }).join('');
