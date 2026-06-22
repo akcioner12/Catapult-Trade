@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Catapult Trade Guide</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -1515,19 +1516,6 @@ if (savedJwt) { lkJwt = savedJwt; }
 setTimeout(() => {
   const liveTgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const liveTgId = liveTgUser?.id || TG_ID;
-
-  // ВРЕМЕННАЯ ДИАГНОСТИКА — покажет реальное состояние прямо на экране
-  alert(JSON.stringify({
-    hasTelegramObj: !!window.Telegram,
-    hasWebApp: !!window.Telegram?.WebApp,
-    platform: window.Telegram?.WebApp?.platform,
-    version: window.Telegram?.WebApp?.version,
-    initData_raw_len: (window.Telegram?.WebApp?.initData || '').length,
-    initDataUnsafe_keys: Object.keys(window.Telegram?.WebApp?.initDataUnsafe || {}),
-    user: liveTgUser,
-    liveTgId: liveTgId
-  }, null, 2));
-
   if (liveTgId) {
     tryLoadLK(liveTgId);
   }
