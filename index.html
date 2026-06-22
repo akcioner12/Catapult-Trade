@@ -1515,6 +1515,19 @@ if (savedJwt) { lkJwt = savedJwt; }
 setTimeout(() => {
   const liveTgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const liveTgId = liveTgUser?.id || TG_ID;
+
+  // ВРЕМЕННАЯ ДИАГНОСТИКА — покажет реальное состояние прямо на экране
+  alert(JSON.stringify({
+    hasTelegramObj: !!window.Telegram,
+    hasWebApp: !!window.Telegram?.WebApp,
+    platform: window.Telegram?.WebApp?.platform,
+    version: window.Telegram?.WebApp?.version,
+    initData_raw_len: (window.Telegram?.WebApp?.initData || '').length,
+    initDataUnsafe_keys: Object.keys(window.Telegram?.WebApp?.initDataUnsafe || {}),
+    user: liveTgUser,
+    liveTgId: liveTgId
+  }, null, 2));
+
   if (liveTgId) {
     tryLoadLK(liveTgId);
   }
