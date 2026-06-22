@@ -1097,6 +1097,12 @@ const BACKEND = window.location.hostname === 'localhost'
 
 const REF_LINK = 'https://catapult.trade/r/akcioner12';
 
+// Telegram WebApp init — ВАЖНО: вызываем ready() сразу, до чтения данных пользователя
+if (window.Telegram?.WebApp) {
+  window.Telegram.WebApp.ready();
+  window.Telegram.WebApp.expand();
+}
+
 // Telegram user id (если открыто в Telegram Mini App)
 const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 const TG_ID  = tgUser?.id || null;
@@ -1495,11 +1501,8 @@ loadMarket();
 const savedJwt = localStorage.getItem('catapult_jwt');
 if (savedJwt) { lkJwt = savedJwt; }
 
-// Telegram WebApp init
-if (window.Telegram?.WebApp) {
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
-}
+// Если Mini App открыт через Telegram и есть TG_ID — пробуем сразу авторизовать кабинет
+if (TG_ID) { tryLoadLK(); }
 </script>
 </body>
 </html>
